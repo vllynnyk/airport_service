@@ -2,6 +2,8 @@ from django.db import models
 from django.db.models.functions import Lower
 from rest_framework.exceptions import ValidationError
 
+from airport_service import settings
+
 
 class Airport(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -182,3 +184,13 @@ class Flight(models.Model):
     def __str__(self):
         return f"{self.route}, {self.departure_date} - {self.arrival_date}"
 
+class Order(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="orders"
+    )
+
+    class Meta:
+        ordering = ("-created_at",)
