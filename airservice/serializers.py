@@ -170,3 +170,20 @@ class FlightSerializer(serializers.ModelSerializer):
 
         return attrs
 
+class FlightListSerializer(FlightSerializer):
+    route = serializers.StringRelatedField(read_only=True)
+    airplane_name = serializers.CharField(
+        source="airplane.name",
+        read_only=True
+    )
+
+    class Meta:
+        model = Flight
+        fields = [
+            "id",
+            "route",
+            "airplane_name",
+            "departure_date",
+            "arrival_date"
+        ]
+
