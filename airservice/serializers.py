@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from airservice.models import Airport, Route, Airplane, AirplaneType, Crew, Flight
+from airservice.models import Airport, Route, Airplane, AirplaneType, Crew, Flight, Ticket
 
 
 class AirportSerializer(serializers.ModelSerializer):
@@ -235,3 +235,25 @@ class RouteRetrieveSerializer(RouteSerializer):
         model = Route
         fields = ["id", "source", "destination", "distance", "flights"]
 
+
+class TicketSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ticket
+        fields = ["id", "row", "seat", "flight"]
+
+    def validate(self, attrs):
+        row = (attrs.get("row") or
+               (self.instance.row if self.instance else None))
+        seat = (attrs.get("seat") or
+                (self.instance.seat if self.instance else None))
+        flight = attrs.get("flight") or (
+            self.instance.flight if self.instance else None
+        )
+        Ticket.validate_place(
+            row,
+            seat,
+            flight.airplane.rows,
+            flight.airplane.seats_in_row,
+            serializers.ValidationError,
+        )
+        return attrs
