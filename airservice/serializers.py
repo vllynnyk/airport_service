@@ -271,3 +271,11 @@ class TicketOrderListSerializer(TicketSerializer):
         model = Ticket
         fields = ["id", "route", "flight_departure", "flight_arrival"]
 
+
+class TicketOrderRetrieveSerializer(TicketOrderListSerializer):
+    flight = FlightRetrieveSerializer(read_only=True)
+
+    class Meta:
+        model = Ticket
+        fields = ["id", "row", "seat", "flight"]
+
