@@ -2,9 +2,10 @@ from django.db.models import Prefetch
 from django.shortcuts import render
 from rest_framework import viewsets
 
-from airservice.models import Airport, Route, Flight
+from airservice.models import Airport, Route, Flight, AirplaneType
 from airservice.serializers import AirportSerializer, AirportListSerializer, AirportRetrieveSerializer, \
-    RouteListSerializer, RouteSerializer, RouteRetrieveSerializer
+    RouteListSerializer, RouteSerializer, RouteRetrieveSerializer, AirplaneTypeSerializer, \
+    AirplaneTypeRetrieveSerializer
 
 
 class AirportViewSet(viewsets.ModelViewSet):
@@ -58,3 +59,12 @@ class RouteViewSet(viewsets.ModelViewSet):
             return RouteRetrieveSerializer
         return RouteSerializer
 
+
+class AirplaneTypeViewSet(viewsets.ModelViewSet):
+    queryset = AirplaneType.objects.all()
+    serializer_class = AirplaneTypeSerializer
+
+    def get_serializer_class(self):
+        if self.action == "retrieve":
+            return AirplaneTypeRetrieveSerializer
+        return AirplaneTypeSerializer
