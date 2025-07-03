@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from airservice.models import Airport, Route, Airplane, AirplaneType, Crew
+from airservice.models import Airport, Route, Airplane, AirplaneType, Crew, Flight
 
 
 class AirportSerializer(serializers.ModelSerializer):
@@ -123,4 +123,50 @@ class CrewListSerializer(CrewSerializer):
     class Meta:
         model = Crew
         fields = ["id", "full_name"]
+
+
+class FlightSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Flight
+        fields = [
+            "id",
+            "route",
+            "airplane",
+            "departure_date",
+            "arrival_date",
+            "crew"
+        ]
+
+    def validate(self, attrs):
+        current_flight_id = self.instance.id if self.instance else None
+
+        crew_list = attrs.get("crew", None)
+        if crew_list is None and self.instance:
+            crew_list = self.instance.crew.all()
+
+        airplane = attrs.get("airplane") or (
+            self.instance.airplane if self.instance else None
+        )
+        departure_date = attrs.get("departure_date") or (
+            self.instance.departure_date if self.instance else None
+        )
+        arrival_date = attrs.get("arrival_date") or (
+            self.instance.arrival_date if self.instance else None
+        )
+
+        Flight.validate_airplane_and_crew(
+            departure_date,
+            arrival_date,
+            current_flight_id,
+            airplane,
+            serializers.ValidationError,
+            crew_list=crew_list,
+        )
+
+        if departure_date >= arrival_date:
+            raise serializers.ValidationError(
+                "Departure date must be before arrival date."
+            )
+
+        return attrs
 
