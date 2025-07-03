@@ -114,6 +114,71 @@ class Flight(models.Model):
     class Meta:
         ordering = ("departure_date", "arrival_date")
 
+    @staticmethod
+    def validate_airplane_and_crew(
+        departure_date,
+        arrival_date,
+        current_flight_id,
+        airplane,
+        error_to_raise,
+        crew_list=None,
+    ):
+        errors = {}
+
+        for flight in airplane.flights.all():
+            if flight.id == current_flight_id:
+                continue
+            if (
+                arrival_date > flight.departure_date
+                and departure_date < flight.arrival_date
+            ):
+                errors["airplane"] = (
+                    f"Airplane {airplane.name} is already"
+                    f" assigned to another flight at this time."
+                )
+                break
+
+        if crew_list is not None:
+            for crew_member in crew_list:
+                for flight in crew_member.flights.all():
+                    if flight.id == current_flight_id:
+                        continue
+                    if (
+                        arrival_date > flight.departure_date
+                        and departure_date < flight.arrival_date
+                    ):
+                        errors["crew"] = (
+                            f"Crew member {crew_member.full_name} is already"
+                            f" assigned to another flight at this time."
+                        )
+                        break
+
+        if errors:
+            raise error_to_raise(errors)
+
+    def clean(self):
+        if self.departure_date >= self.arrival_date:
+            raise ValidationError("Departure must be before arrival.")
+        Flight.validate_airplane_and_crew(
+            self.departure_date,
+            self.arrival_date,
+            self.id,
+            self.airplane,
+            ValidationError,
+        )
+
+    def save(
+            self,
+            force_insert=False,
+            force_update=False,
+            using=None,
+            update_fields=None
+    ):
+        self.full_clean()
+        return super(Flight, self).save(
+            force_insert, force_update, using, update_fields
+        )
+
     def __str__(self):
         return f"{self.route}, {self.departure_date} - {self.arrival_date}"
 
