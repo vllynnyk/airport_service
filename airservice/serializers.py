@@ -257,3 +257,17 @@ class TicketSerializer(serializers.ModelSerializer):
             serializers.ValidationError,
         )
         return attrs
+
+class TicketOrderListSerializer(TicketSerializer):
+    route = serializers.StringRelatedField(read_only=True)
+    flight_departure = serializers.DateTimeField(
+        source="flight.departure_date", read_only=True
+    )
+    flight_arrival = serializers.DateTimeField(
+        source="flight.arrival_date", read_only=True
+    )
+
+    class Meta:
+        model = Ticket
+        fields = ["id", "route", "flight_departure", "flight_arrival"]
+
