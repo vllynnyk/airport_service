@@ -1,5 +1,6 @@
 from django.db import models
 from django.db.models.functions import Lower
+from rest_framework.exceptions import ValidationError
 
 
 class Airport(models.Model):
@@ -38,6 +39,24 @@ class Route(models.Model):
             )
         ]
         ordering = ("source", "destination")
+
+    @staticmethod
+    def validate_source_and_destination(source, destination, error_to_raise):
+        if source == destination:
+            raise error_to_raise(
+                f"Source({source.name}) and"
+                f" Destination({destination.name}) can't be the same"
+            )
+
+    def clean(self):
+        Route.validate_source_and_destination(
+            self.source, self.destination, ValidationError
+        )
+
+    def save(self, *args, **kwargs):
+        self.display_name = f"{self.source.name} - {self.destination.name}"
+        self.full_clean()
+        return super().save(*args, **kwargs)
 
     def __str__(self):
         return self.display_name
