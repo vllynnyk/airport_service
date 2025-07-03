@@ -304,3 +304,10 @@ class OrderListSerializer(OrderSerializer):
         model = Order
         fields = ["id", "created_at", "tickets"]
 
+
+class OrderRetrieveSerializer(OrderSerializer):
+    tickets = TicketOrderRetrieveSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Order
+        fields = ["id", "created_at", "tickets"]
