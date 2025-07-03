@@ -217,6 +217,40 @@ class Ticket(models.Model):
         ]
         ordering = ("flight",)
 
+    @staticmethod
+    def validate_place(row, seat, rows, seats_in_row, error_to_raise):
+        errors = {}
+        if not (1 <= row <= rows):
+            errors["row"] = f"Row must be between 1 and {rows}, not {row}"
+
+        if not (1 <= seat <= seats_in_row):
+            errors["seat"] = (f"Seat must be between 1 and"
+                              f" {seats_in_row}, not {seat}")
+
+        if errors:
+            raise error_to_raise(errors)
+
+    def clean(self):
+        Ticket.validate_place(
+            self.row,
+            self.seat,
+            self.flight.airplane.rows,
+            self.flight.airplane.seats_in_row,
+            ValidationError,
+        )
+
+    def save(
+        self,
+        force_insert=False,
+        force_update=False,
+        using=None,
+        update_fields=None
+    ):
+        self.full_clean()
+        return super(Ticket, self).save(
+            force_insert, force_update, using, update_fields
+        )
+
     def __str__(self):
         return f"{self.flight}, {self.row}: {self.seat}"
 
