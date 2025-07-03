@@ -117,3 +117,10 @@ class CrewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Crew
         fields = ["id", "first_name", "last_name", "full_name"]
+
+
+class CrewListSerializer(CrewSerializer):
+    class Meta:
+        model = Crew
+        fields = ["id", "full_name"]
+
