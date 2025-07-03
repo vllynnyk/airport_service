@@ -216,3 +216,10 @@ class AirplaneRetrieveSerializer(AirplaneSerializer):
             "airplane_type",
             "flights"
         ]
+
+class CrewRetrieveSerializer(CrewSerializer):
+    flights = FlightListSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Crew
+        fields = ["id", "first_name", "last_name", "full_name", "flights"]
