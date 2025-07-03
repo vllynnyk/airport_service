@@ -1,13 +1,13 @@
 from django.db.models import Prefetch
-from django.shortcuts import render
-from rest_framework import viewsets
+from rest_framework import viewsets, mixins, permissions
+from rest_framework.viewsets import GenericViewSet
 
-from airservice.models import Airport, Route, Flight, AirplaneType, Airplane, Crew
+from airservice.models import Airport, Route, Flight, AirplaneType, Airplane, Crew, Order
 from airservice.serializers import AirportSerializer, AirportListSerializer, AirportRetrieveSerializer, \
     RouteListSerializer, RouteSerializer, RouteRetrieveSerializer, AirplaneTypeSerializer, \
     AirplaneTypeRetrieveSerializer, AirplaneSerializer, AirplaneListSerializer, AirplaneRetrieveSerializer, \
     CrewSerializer, CrewListSerializer, CrewRetrieveSerializer, FlightSerializer, FlightListSerializer, \
-    FlightRetrieveSerializer
+    FlightRetrieveSerializer, OrderSerializer, OrderListSerializer, OrderRetrieveSerializer
 
 
 class AirportViewSet(viewsets.ModelViewSet):
@@ -134,3 +134,27 @@ class FlightViewSet(viewsets.ModelViewSet):
             return FlightRetrieveSerializer
         return FlightSerializer
 
+
+class OrderViewSet(
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.DestroyModelMixin,
+    mixins.ListModelMixin,
+    GenericViewSet,
+):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get_queryset(self):
+        queryset = super().get_queryset().filter(user=self.request.user)
+        if self.action in ["list", "retrieve"]:
+            queryset = queryset.prefetch_related("tickets__flight__crew")
+        return queryset
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return OrderListSerializer
+        elif self.action == "retrieve":
+            return OrderRetrieveSerializer
+        return OrderSerializer
