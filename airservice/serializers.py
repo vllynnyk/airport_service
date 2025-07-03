@@ -223,3 +223,15 @@ class CrewRetrieveSerializer(CrewSerializer):
     class Meta:
         model = Crew
         fields = ["id", "first_name", "last_name", "full_name", "flights"]
+
+
+
+class RouteRetrieveSerializer(RouteSerializer):
+    source = AirportSerializer(read_only=True)
+    destination = AirportSerializer(read_only=True)
+    flights = FlightListSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Route
+        fields = ["id", "source", "destination", "distance", "flights"]
+
