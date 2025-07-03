@@ -37,3 +37,18 @@ class RouteSerializer(serializers.ModelSerializer):
                 source, destination, serializers.ValidationError
             )
         return attrs
+
+
+class RouteListSerializer(RouteSerializer):
+    source_airport = serializers.CharField(
+        source="source.name",
+        read_only=True
+    )
+    destination_airport = serializers.CharField(
+        source="destination.name",
+        read_only=True
+    )
+
+    class Meta:
+        model = Route
+        fields = ["id", "source_airport", "destination_airport", "distance"]
