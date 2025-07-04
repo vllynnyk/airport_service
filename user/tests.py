@@ -109,3 +109,14 @@ class UserTests(TestCase):
                 response.status_code,
                 status.HTTP_401_UNAUTHORIZED
             )
+
+    def test_authenticated_user_can_access_me(self):
+        self.client.force_authenticate(user=self.user)
+        response = self.client.get(self.me_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["email"], self.user.email)
+        self.assertEqual(response.data["is_staff"], False)
+
+    def test_unauthenticated_user_cannot_access_me(self):
+        response = self.client.get(self.me_url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
