@@ -1,11 +1,18 @@
+from datetime import timedelta
+
+from django.contrib.auth import get_user_model
 from django.test import TestCase
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.reverse import reverse
 from rest_framework.test import APIClient
 from django.db import IntegrityError
 
-from airservice.models import AirplaneType, Airplane
-
+from airservice.models import AirplaneType, Airplane, Airport, Route, Flight
+from airservice.serializers import (
+    AirplaneListSerializer,
+    AirplaneRetrieveSerializer
+)
 
 AIRPLANE_URL = reverse("airservice:airplane-list")
 
@@ -47,3 +54,68 @@ class UnauthorizedAirplaneTests(AirplaneBaseTest):
     def test_auth_required(self):
         response = self.client.get(AIRPLANE_URL)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class AuthorizedAirplaneTests(AirplaneBaseTest):
+    def setUp(self):
+        self.client = APIClient()
+        self.user = get_user_model().objects.create_user(
+            email="test@test.com",
+            password="testpass",
+        )
+        self.client.force_authenticate(user=self.user)
+
+    def test_airplane_list(self):
+        response = self.client.get(AIRPLANE_URL)
+        airplane = Airplane.objects.all()
+        serializer = AirplaneListSerializer(airplane, many=True)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["results"], serializer.data)
+
+    def test_retrieve_airplane(self):
+        airport_1 = Airport.objects.create(
+            name="Arlanda",
+            closest_big_city="Stockholm",
+            country="Sweden",
+        )
+        airport_2 = Airport.objects.create(
+            name="MUC",
+            closest_big_city="Munich",
+            country="German",
+        )
+        route_1 = Route.objects.create(
+            source=airport_1,
+            destination=airport_2,
+            distance=100,
+        )
+        Flight.objects.create(
+            route=route_1,
+            airplane=self.airplane_1,
+            departure_date=timezone.now(),
+            arrival_date=timezone.now() + timedelta(hours=2),
+        )
+        url = detail_url(self.airplane_1.id)
+        response = self.client.get(url)
+        serializer = AirplaneRetrieveSerializer(self.airplane_1)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, serializer.data)
+        self.assertIn("flights", response.data)
+        self.assertEqual(len(response.data["flights"]), 1)
+
+    def test_create_airport_forbidden(self):
+        payload = {
+            "name": "Airbus C300",
+            "rows": 30,
+            "seats_in_row": 6,
+            "airplane_type": self.airplane_type.id,
+        }
+        response = self.client.post(AIRPLANE_URL, payload)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_update_airplane_forbidden(self):
+        payload = {
+            "name": "Airbus C300",
+        }
+        response = self.client.patch(detail_url(self.airplane_1), payload)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
