@@ -1,5 +1,7 @@
 from django.test import TestCase
+from rest_framework import status
 from rest_framework.reverse import reverse
+from rest_framework.test import APIClient
 from django.db import IntegrityError
 
 from airservice.models import AirplaneType, Airplane
@@ -27,3 +29,13 @@ class AirplaneTypeBaseTest(TestCase):
     def test_airplane_type_name_must_be_unique(self):
         with self.assertRaises(IntegrityError):
             AirplaneType.objects.create(name="Airliner")
+
+
+class UnauthenticatedAirplaneTypeApiTests(AirplaneTypeBaseTest):
+    def setUp(self):
+        self.client = APIClient()
+
+    def test_auth_required(self):
+        response = self.client.get(AIRPLANE_TYPE_URL)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
