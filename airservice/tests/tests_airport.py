@@ -1,5 +1,7 @@
 from django.test import TestCase
+from rest_framework import status
 from rest_framework.reverse import reverse
+from rest_framework.test import APIClient
 from django.db import IntegrityError
 
 from airservice.models import Airport, Route
@@ -41,3 +43,12 @@ class AirportBaseTest(TestCase):
             Airport.objects.create(
                 name="muc", closest_big_city="Munich", country="German"
             )
+
+
+class UnauthenticatedAirportApiTests(AirportBaseTest):
+    def setUp(self):
+        self.client = APIClient()
+
+    def test_auth_required(self):
+        response = self.client.get(AIRPORT_URL)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
