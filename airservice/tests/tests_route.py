@@ -1,6 +1,8 @@
 from django.core.exceptions import ValidationError
 from django.test import TestCase
+from rest_framework import status
 from rest_framework.reverse import reverse
+from rest_framework.test import APIClient
 
 from airservice.models import Route, Airport
 
@@ -59,3 +61,13 @@ class RouteBaseTest(TestCase):
         with self.assertRaises(ValidationError):
             route.full_clean()
             route.save()
+
+
+class UnauthenticatedRouteApiTests(RouteBaseTest):
+    def setUp(self):
+        self.client = APIClient()
+
+    def test_auth_required(self):
+        response = self.client.get(ROUTE_URL)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
