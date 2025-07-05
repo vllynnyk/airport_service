@@ -178,6 +178,19 @@ class AdminRouteTests(RouteBaseTest):
                 else:
                     self.assertEqual(payload[key], route_value)
 
+    def test_serializer_validates_same_source_and_destination(self):
+        payload = {
+            "source": self.airport_1.id,
+            "destination": self.airport_1.id,
+            "distance": 100,
+        }
+        serializer = RouteSerializer(data=payload)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn(
+            "non_field_errors",
+            serializer.errors
+        )
+
     def test_update_route(self):
         payload = {"distance": 2000}
         url = detail_url(self.route_1.id)
