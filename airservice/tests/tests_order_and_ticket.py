@@ -206,3 +206,26 @@ class AuthenticatedOrderAndTicketApiTests(OrderAndTicketBaseTest):
         self.assertIn("13", str(serializer.errors["row"]))
         self.assertIn("seat", serializer.errors)
         self.assertIn("9", str(serializer.errors["seat"]))
+
+    def test_update_order(self):
+        payload = {
+            "tickets": [
+                {
+                    "id": self.ticket_1.id,
+                    "row": 6,
+                }
+            ]
+        }
+        url = detail_url(self.order_1.id)
+        response = self.client.patch(url, payload, format="json")
+        self.order_1.refresh_from_db()
+        print(response.data)
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_405_METHOD_NOT_ALLOWED
+        )
+
+    def test_delete_order(self):
+        url = detail_url(self.order_1.id)
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
