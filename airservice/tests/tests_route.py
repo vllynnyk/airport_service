@@ -148,3 +148,45 @@ class AuthenticatedRouteApiTests(RouteBaseTest):
         response = self.client.patch(url, payload)
         self.route_1.refresh_from_db()
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+class AdminRouteTests(RouteBaseTest):
+    def setUp(self):
+        self.client = APIClient()
+        self.user = get_user_model().objects.create_user(
+            email="test@test.com",
+            password="testpass",
+            is_staff=True,
+        )
+        self.client.force_authenticate(user=self.user)
+
+    def test_create_route(self):
+        payload = {
+            "source": self.airport_1.id,
+            "destination": self.airport_3.id,
+            "distance": 1000,
+        }
+        response = self.client.post(ROUTE_URL, payload)
+        route = Route.objects.get(id=response.data["id"])
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        for key in payload:
+            with self.subTest(field=key):
+                route_value = getattr(route, key)
+                if isinstance(route_value, models.Model):
+                    self.assertEqual(payload[key], route_value.id)
+                else:
+                    self.assertEqual(payload[key], route_value)
+
+    def test_update_route(self):
+        payload = {"distance": 2000}
+        url = detail_url(self.route_1.id)
+        response = self.client.patch(url, payload)
+        self.route_1.refresh_from_db()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(self.route_1.distance, 2000)
+
+    def test_delete_route(self):
+        url = detail_url(self.route_1.id)
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
