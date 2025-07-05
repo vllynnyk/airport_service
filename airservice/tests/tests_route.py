@@ -132,3 +132,19 @@ class AuthenticatedRouteApiTests(RouteBaseTest):
         self.assertEqual(response.data, serializer.data)
         self.assertIn("flights", response.data)
         self.assertEqual(len(response.data["flights"]), 1)
+
+    def test_create_route_forbidden(self):
+        payload = {
+            "source": self.airport_1.id,
+            "destination": self.airport_3.id,
+            "distance": 100,
+        }
+        response = self.client.post(ROUTE_URL, payload)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_update_route_forbidden(self):
+        payload = {"distance": 300}
+        url = detail_url(self.route_1.id)
+        response = self.client.patch(url, payload)
+        self.route_1.refresh_from_db()
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
