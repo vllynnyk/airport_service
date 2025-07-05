@@ -85,3 +85,37 @@ class AuthenticatedAirplaneTypeApiTests(AirplaneTypeBaseTest):
         response = self.client.patch(url, payload)
         self.airplane_type_1.refresh_from_db()
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+class AdminAirplaneTypeTests(AirplaneTypeBaseTest):
+    def setUp(self):
+        self.client = APIClient()
+        self.user = get_user_model().objects.create_user(
+            email="test@test.com",
+            password="testpass",
+            is_staff=True,
+        )
+        self.client.force_authenticate(user=self.user)
+
+    def test_create_airplane_type(self):
+        payload = {
+            "name": "Glider",
+        }
+        response = self.client.post(AIRPLANE_TYPE_URL, payload)
+        airplane_type = AirplaneType.objects.get(id=response.data["id"])
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(payload["name"], getattr(airplane_type, "name"))
+
+    def test_update_airplane_type(self):
+        payload = {"name": "Glider"}
+        url = detail_url(self.airplane_type_1.id)
+        response = self.client.patch(url, payload)
+        self.airplane_type_1.refresh_from_db()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(self.airplane_type_1.name, "Glider")
+
+    def test_delete_airplane_type(self):
+        url = detail_url(self.airplane_type_1.id)
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
