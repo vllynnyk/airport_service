@@ -1,8 +1,9 @@
 from datetime import timedelta
 from django.utils import timezone
 from django.test import TestCase
+from rest_framework import status
 from rest_framework.reverse import reverse
-
+from rest_framework.test import APIClient
 from airservice.models import (
     Airport,
     Flight,
@@ -11,6 +12,7 @@ from airservice.models import (
     Route,
     Crew,
 )
+
 
 FLIGHT_URL = reverse("airservice:flight-list")
 
@@ -66,3 +68,10 @@ class FlightBaseTest(TestCase):
         cls.flight.crew.add(cls.crew_1)
         cls.flight.save()
 
+class UnauthenticatedFlightApiTests(FlightBaseTest):
+    def setUp(self):
+        self.client = APIClient()
+
+    def test_auth_required(self):
+        response = self.client.get(FLIGHT_URL)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
