@@ -36,3 +36,10 @@ class CrewBaseTest(TestCase):
             last_name="Smith",
         )
 
+class UnauthenticatedCrewApiTests(CrewBaseTest):
+    def setUp(self):
+        self.client = APIClient()
+
+    def test_auth_required(self):
+        response = self.client.get(CREW_URL)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
