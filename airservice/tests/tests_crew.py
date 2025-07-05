@@ -122,3 +122,38 @@ class AuthenticatedCrewApiTests(CrewBaseTest):
         response = self.client.patch(url, payload)
         self.crew_1.refresh_from_db()
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+class AdminCrewTests(CrewBaseTest):
+    def setUp(self):
+        self.client = APIClient()
+        self.user = get_user_model().objects.create_user(
+            email="test@test.com",
+            password="testpass",
+            is_staff=True,
+        )
+        self.client.force_authenticate(user=self.user)
+
+    def test_create_crew(self):
+        payload = {"first_name": "Jack", "last_name": "Smut"}
+        response = self.client.post(CREW_URL, payload)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        crew = Crew.objects.get(id=response.data["id"])
+
+        for key in payload:
+            self.assertEqual(payload[key], getattr(crew, key))
+
+    def test_update_crew(self):
+        payload = {"last_name": "Smut"}
+        url = detail_url(self.crew_1.id)
+        response = self.client.patch(url, payload)
+        self.crew_1.refresh_from_db()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(self.crew_1.last_name, "Smut")
+
+    def test_delete_crew(self):
+        url = detail_url(self.crew_1.id)
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
