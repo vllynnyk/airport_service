@@ -144,3 +144,114 @@ class AuthenticatedFightApiTests(FlightBaseTest):
         self.flight.refresh_from_db()
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
+
+class AdminFlightTests(FlightBaseTest):
+    def setUp(self):
+        self.client = APIClient()
+        self.user = get_user_model().objects.create_user(
+            email="test@test.com",
+            password="testpass",
+            is_staff=True,
+        )
+        self.client.force_authenticate(user=self.user)
+
+    def test_create_flight(self):
+        payload = {
+            "route": self.route_2.id,
+            "airplane": self.airplane_2.id,
+            "departure_date": timezone.now(),
+            "arrival_date": timezone.now() + timedelta(hours=2),
+            "crew": [
+                self.crew_2.id,
+            ],
+        }
+        response = self.client.post(FLIGHT_URL, payload)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        flight = Flight.objects.get(id=response.data["id"])
+
+        for key in payload:
+            with self.subTest(field=key):
+                flight_value = getattr(flight, key)
+                if isinstance(flight_value, models.Model):
+                    self.assertEqual(payload[key], flight_value.id)
+                else:
+                    if hasattr(flight_value, "all"):
+                        self.assertEqual(
+                            sorted(payload[key]),
+                            sorted(
+                                [member.id for member in flight_value.all()]
+                            ),
+                        )
+                    else:
+                        self.assertEqual(payload[key], flight_value)
+
+    def test_serializer_validates_assigned_crew(self):
+        payload = {
+            "route": self.route_2.id,
+            "airplane": self.airplane_2.id,
+            "departure_date": timezone.now(),
+            "arrival_date": timezone.now() + timedelta(hours=2),
+            "crew": [
+                self.crew_1.id,
+            ],
+        }
+        serializer = FlightSerializer(data=payload)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("crew", serializer.errors)
+        self.assertIn("Jack Jones", str(serializer.errors["crew"]))
+
+    def test_serializer_validates_assigned_airplane(self):
+        payload = {
+            "route": self.route_2.id,
+            "airplane": self.airplane_1.id,
+            "departure_date": timezone.now(),
+            "arrival_date": timezone.now() + timedelta(hours=2),
+            "crew": [
+                self.crew_2.id,
+            ],
+        }
+        serializer = FlightSerializer(data=payload)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("airplane", serializer.errors)
+        self.assertIn("Plane A", str(serializer.errors["airplane"]))
+
+    def test_serializer_invalid_airplane_and_crew_conflict(self):
+        payload = {
+            "route": self.route_2.id,
+            "airplane": self.airplane_1.id,  # уже занят
+            "departure_date": timezone.now(),
+            "arrival_date": timezone.now() + timedelta(hours=2),
+            "crew": [self.crew_1.id],  # уже занят
+        }
+        serializer = FlightSerializer(data=payload)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("airplane", serializer.errors)
+        self.assertIn("crew", serializer.errors)
+
+    def test_serializer_invalid_if_departure_after_arrival(self):
+        payload = {
+            "route": self.route_2.id,
+            "airplane": self.airplane_2.id,
+            "departure_date": timezone.now() + timedelta(hours=3),
+            "arrival_date": timezone.now() + timedelta(hours=2),
+            "crew": [self.crew_2.id],
+        }
+        serializer = FlightSerializer(data=payload)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("non_field_errors", serializer.errors)
+
+    def test_update_flight(self):
+        payload = {
+            "route": self.route_2.id,
+        }
+        url = detail_url(self.flight.id)
+        response = self.client.patch(url, payload)
+        self.flight.refresh_from_db()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(self.flight.route, self.route_2)
+
+    def test_delete_flight(self):
+        url = detail_url(self.flight.id)
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
