@@ -20,6 +20,11 @@ from airservice.models import (
     Crew,
     Ticket,
 )
+from airservice.serializers import (
+    OrderListSerializer,
+    OrderRetrieveSerializer,
+    FlightRetrieveSerializer,
+)
 
 
 ORDER_URL = reverse("airservice:order-list")
@@ -110,3 +115,55 @@ class UnauthenticatedOrderAndTicketApiTests(OrderAndTicketBaseTest):
     def test_auth_required(self):
         response = self.client.get(ORDER_URL)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+class AuthenticatedOrderAndTicketApiTests(OrderAndTicketBaseTest):
+    def setUp(self):
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.__class__.user)
+
+    def test_orders_list(self):
+        response = self.client.get(ORDER_URL)
+        orders = Order.objects.all()
+        serializer = OrderListSerializer(orders, many=True)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["results"], serializer.data)
+
+    def test_orders_sorted_by_negative_date(self):
+        response = self.client.get(ORDER_URL)
+        orders = [order["created_at"] for order in response.data["results"]]
+        self.assertEqual(orders, sorted(orders, reverse=True))
+
+    def test_retrieve_order(self):
+        url = detail_url(self.order_1.id)
+        response = self.client.get(url)
+        serializer = OrderRetrieveSerializer(self.order_1)
+        expected_flight_data = FlightRetrieveSerializer(self.flight).data
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, serializer.data)
+        self.assertIn("tickets", response.data)
+        self.assertEqual(len(response.data["tickets"]), 1)
+        for ticket in response.data["tickets"]:
+            self.assertIn("flight", ticket)
+            self.assertEqual(ticket["flight"], expected_flight_data)
+
+    def test_create_order(self):
+        payload = {
+            "tickets": [
+                {
+                    "row": 3,
+                    "seat": 1,
+                    "flight": self.flight.id,
+                }
+            ]
+        }
+        response = self.client.post(ORDER_URL, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        order = Order.objects.get(id=response.data["id"])
+        self.assertEqual(order.tickets.count(), 1)
+        ticket = order.tickets.first()
+        self.assertEqual(ticket.row, payload["tickets"][0]["row"])
+        self.assertEqual(ticket.seat, payload["tickets"][0]["seat"])
+        self.assertEqual(ticket.flight.id, payload["tickets"][0]["flight"])
