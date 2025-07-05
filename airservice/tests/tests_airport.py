@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from django.test import TestCase
 from rest_framework import status
 from rest_framework.reverse import reverse
@@ -5,6 +6,10 @@ from rest_framework.test import APIClient
 from django.db import IntegrityError
 
 from airservice.models import Airport, Route
+from airservice.serializers import (
+    AirportListSerializer,
+    AirportRetrieveSerializer
+)
 
 
 AIRPORT_URL = reverse("airservice:airport-list")
@@ -52,3 +57,55 @@ class UnauthenticatedAirportApiTests(AirportBaseTest):
     def test_auth_required(self):
         response = self.client.get(AIRPORT_URL)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class AuthenticatedAirportApiTests(AirportBaseTest):
+    def setUp(self):
+        self.client = APIClient()
+        self.user = get_user_model().objects.create_user(
+            email="test@test.com",
+            password="testpass",
+        )
+        self.client.force_authenticate(user=self.user)
+
+    def test_airports_list(self):
+        response = self.client.get(AIRPORT_URL)
+        airports = Airport.objects.all()
+        serializer = AirportListSerializer(airports, many=True)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["results"], serializer.data)
+
+    def test_airports_sorted_by_name(self):
+        response = self.client.get(AIRPORT_URL)
+        names = [airport["name"] for airport in response.data["results"]]
+        self.assertEqual(names, sorted(names))
+
+    def test_retrieve_airport(self):
+        url = detail_url(self.airport_1.id)
+        response = self.client.get(url)
+        serializer = AirportRetrieveSerializer(self.airport_1)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, serializer.data)
+        self.assertIn("departure", response.data)
+        self.assertIn("arrival", response.data)
+        self.assertEqual(len(response.data["departure"]), 1)
+        self.assertEqual(len(response.data["arrival"]), 1)
+
+    def test_create_airport_forbidden(self):
+        payload = {
+            "name": "BER",
+            "closest_big_city": "Berlin",
+            "country": "German",
+        }
+        response = self.client.post(AIRPORT_URL, payload)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_update_airport_forbidden(self):
+        payload = {"closest_big_city": "Berlin"}
+        url = detail_url(self.airport_1.id)
+        response = self.client.patch(url, payload)
+        self.airport_1.refresh_from_db()
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
