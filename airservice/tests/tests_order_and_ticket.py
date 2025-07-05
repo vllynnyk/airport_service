@@ -24,6 +24,7 @@ from airservice.serializers import (
     OrderListSerializer,
     OrderRetrieveSerializer,
     FlightRetrieveSerializer,
+    TicketSerializer,
 )
 
 
@@ -167,3 +168,41 @@ class AuthenticatedOrderAndTicketApiTests(OrderAndTicketBaseTest):
         self.assertEqual(ticket.row, payload["tickets"][0]["row"])
         self.assertEqual(ticket.seat, payload["tickets"][0]["seat"])
         self.assertEqual(ticket.flight.id, payload["tickets"][0]["flight"])
+
+    def test_serializer_validates_row(self):
+        payload = {
+            "row": 33,
+            "seat": 1,
+            "flight": self.flight.id,
+            "order": self.order_1.id,
+        }
+        serializer = TicketSerializer(data=payload)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("row", serializer.errors)
+        self.assertIn("33", str(serializer.errors["row"]))
+
+    def test_serializer_validates_seat(self):
+        payload = {
+            "row": 3,
+            "seat": 8,
+            "flight": self.flight.id,
+            "order": self.order_1.id,
+        }
+        serializer = TicketSerializer(data=payload)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("seat", serializer.errors)
+        self.assertIn("8", str(serializer.errors["seat"]))
+
+    def test_serializer_validates_and_row_seat(self):
+        payload = {
+            "row": 13,
+            "seat": 9,
+            "flight": self.flight.id,
+            "order": self.order_1.id,
+        }
+        serializer = TicketSerializer(data=payload)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("row", serializer.errors)
+        self.assertIn("13", str(serializer.errors["row"]))
+        self.assertIn("seat", serializer.errors)
+        self.assertIn("9", str(serializer.errors["seat"]))
