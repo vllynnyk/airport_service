@@ -149,6 +149,7 @@ class AuthenticatedRouteApiTests(RouteBaseTest):
         self.route_1.refresh_from_db()
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
+
 class AdminRouteTests(RouteBaseTest):
     def setUp(self):
         self.client = APIClient()
@@ -186,10 +187,7 @@ class AdminRouteTests(RouteBaseTest):
         }
         serializer = RouteSerializer(data=payload)
         self.assertFalse(serializer.is_valid())
-        self.assertIn(
-            "non_field_errors",
-            serializer.errors
-        )
+        self.assertIn("non_field_errors", serializer.errors)
 
     def test_update_route(self):
         payload = {"distance": 2000}

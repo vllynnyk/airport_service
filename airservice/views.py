@@ -3,12 +3,37 @@ from drf_spectacular.utils import extend_schema
 from rest_framework import viewsets, mixins, permissions
 from rest_framework.viewsets import GenericViewSet
 
-from airservice.models import Airport, Route, Flight, AirplaneType, Airplane, Crew, Order
-from airservice.serializers import AirportSerializer, AirportListSerializer, AirportRetrieveSerializer, \
-    RouteListSerializer, RouteSerializer, RouteRetrieveSerializer, AirplaneTypeSerializer, \
-    AirplaneTypeRetrieveSerializer, AirplaneSerializer, AirplaneListSerializer, AirplaneRetrieveSerializer, \
-    CrewSerializer, CrewListSerializer, CrewRetrieveSerializer, FlightSerializer, FlightListSerializer, \
-    FlightRetrieveSerializer, OrderSerializer, OrderListSerializer, OrderRetrieveSerializer
+from airservice.models import (
+    Airport,
+    Route,
+    Flight,
+    AirplaneType,
+    Airplane,
+    Crew,
+    Order,
+)
+from airservice.serializers import (
+    AirportSerializer,
+    AirportListSerializer,
+    AirportRetrieveSerializer,
+    RouteListSerializer,
+    RouteSerializer,
+    RouteRetrieveSerializer,
+    AirplaneTypeSerializer,
+    AirplaneTypeRetrieveSerializer,
+    AirplaneSerializer,
+    AirplaneListSerializer,
+    AirplaneRetrieveSerializer,
+    CrewSerializer,
+    CrewListSerializer,
+    CrewRetrieveSerializer,
+    FlightSerializer,
+    FlightListSerializer,
+    FlightRetrieveSerializer,
+    OrderSerializer,
+    OrderListSerializer,
+    OrderRetrieveSerializer,
+)
 
 
 class AirportViewSet(viewsets.ModelViewSet):
@@ -38,14 +63,16 @@ class AirportViewSet(viewsets.ModelViewSet):
         return AirportSerializer
 
     @extend_schema(
-        description="Retrieve a list of all airports. Optionally filter by country or name.",
+        description="Retrieve a list of all airports."
+                    " Optionally filter by country or name.",
         responses=AirportListSerializer,
     )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
     @extend_schema(
-        description="Retrieve detailed information about an airport, including departure and arrival routes.",
+        description="Retrieve detailed information about"
+                    " an airport, including departure and arrival routes.",
         responses=AirportRetrieveSerializer,
     )
     def retrieve(self, request, *args, **kwargs):
@@ -78,14 +105,16 @@ class RouteViewSet(viewsets.ModelViewSet):
         return RouteSerializer
 
     @extend_schema(
-        description="Retrieve a list of routes with brief information about source and destination airports.",
+        description="Retrieve a list of routes with brief"
+                    " information about source and destination airports.",
         responses=RouteListSerializer,
     )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
     @extend_schema(
-        description="Retrieve detailed information about a route, including its flights.",
+        description="Retrieve detailed information"
+                    " about a route, including its flights.",
         responses=RouteRetrieveSerializer,
     )
     def retrieve(self, request, *args, **kwargs):
@@ -109,12 +138,12 @@ class AirplaneTypeViewSet(viewsets.ModelViewSet):
         return super().list(request, *args, **kwargs)
 
     @extend_schema(
-        description="Retrieve detailed information about an airplane type including related airplanes.",
+        description="Retrieve detailed information"
+                    " about an airplane type including related airplanes.",
         responses=AirplaneTypeRetrieveSerializer,
     )
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
-
 
 
 class AirplaneViewSet(viewsets.ModelViewSet):
@@ -144,7 +173,8 @@ class AirplaneViewSet(viewsets.ModelViewSet):
         return super().list(request, *args, **kwargs)
 
     @extend_schema(
-        description="Retrieve detailed information about an airplane including its flights.",
+        description="Retrieve detailed information"
+                    " about an airplane including its flights.",
         responses=AirplaneRetrieveSerializer,
     )
     def retrieve(self, request, *args, **kwargs):
@@ -184,7 +214,8 @@ class CrewViewSet(viewsets.ModelViewSet):
         return super().list(request, *args, **kwargs)
 
     @extend_schema(
-        description="Retrieve detailed information about a crew member including their flights.",
+        description="Retrieve detailed information about"
+                    " a crew member including their flights.",
         responses=CrewRetrieveSerializer,
     )
     def retrieve(self, request, *args, **kwargs):
@@ -209,14 +240,16 @@ class FlightViewSet(viewsets.ModelViewSet):
         return FlightSerializer
 
     @extend_schema(
-        description="Retrieve a list of flights with routes and airplane info.",
+        description="Retrieve a list of flights"
+                    " with routes and airplane info.",
         responses=FlightListSerializer,
     )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
     @extend_schema(
-        description="Retrieve detailed information about a flight including the crew.",
+        description="Retrieve detailed information"
+                    " about a flight including the crew.",
         responses=FlightRetrieveSerializer,
     )
     def retrieve(self, request, *args, **kwargs):
@@ -251,14 +284,16 @@ class OrderViewSet(
         return OrderSerializer
 
     @extend_schema(
-        description="Retrieve a list of orders of the current user including tickets and flight info.",
+        description="Retrieve a list of orders of the current user"
+                    " including tickets and flight info.",
         responses=OrderListSerializer,
     )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
     @extend_schema(
-        description="Retrieve detailed information about an order including tickets.",
+        description="Retrieve detailed information"
+                    " about an order including tickets.",
         responses=OrderRetrieveSerializer,
     )
     def retrieve(self, request, *args, **kwargs):

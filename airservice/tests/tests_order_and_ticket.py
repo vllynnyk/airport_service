@@ -108,7 +108,6 @@ class OrderAndTicketBaseTest(TestCase):
             )
 
 
-
 class UnauthenticatedOrderAndTicketApiTests(OrderAndTicketBaseTest):
     def setUp(self):
         self.client = APIClient()
@@ -116,6 +115,7 @@ class UnauthenticatedOrderAndTicketApiTests(OrderAndTicketBaseTest):
     def test_auth_required(self):
         response = self.client.get(ORDER_URL)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
 
 class AuthenticatedOrderAndTicketApiTests(OrderAndTicketBaseTest):
     def setUp(self):

@@ -109,6 +109,7 @@ class AuthenticatedAirportApiTests(AirportBaseTest):
         self.airport_1.refresh_from_db()
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
+
 class AdminAirportTests(AirportBaseTest):
     def setUp(self):
         self.client = APIClient()

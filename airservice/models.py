@@ -63,6 +63,7 @@ class Route(models.Model):
     def __str__(self):
         return self.display_name
 
+
 class AirplaneType(models.Model):
     name = models.CharField(max_length=100, unique=True)
 
@@ -83,6 +84,7 @@ class Airplane(models.Model):
 
     def __str__(self):
         return f"{self.name}"
+
 
 class Crew(models.Model):
     first_name = models.CharField(max_length=100)
@@ -170,8 +172,7 @@ class Flight(models.Model):
         )
 
     def save(
-            self,
-            force_insert=False,
+        self, force_insert=False,
             force_update=False,
             using=None,
             update_fields=None
@@ -184,6 +185,7 @@ class Flight(models.Model):
     def __str__(self):
         return f"{self.route}, {self.departure_date} - {self.arrival_date}"
 
+
 class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(
@@ -194,6 +196,7 @@ class Order(models.Model):
 
     class Meta:
         ordering = ("-created_at",)
+
 
 class Ticket(models.Model):
     row = models.IntegerField()
@@ -224,8 +227,9 @@ class Ticket(models.Model):
             errors["row"] = f"Row must be between 1 and {rows}, not {row}"
 
         if not (1 <= seat <= seats_in_row):
-            errors["seat"] = (f"Seat must be between 1 and"
-                              f" {seats_in_row}, not {seat}")
+            errors["seat"] = (
+                f"Seat must be between 1 and" f" {seats_in_row}, not {seat}"
+            )
 
         if errors:
             raise error_to_raise(errors)
@@ -241,10 +245,10 @@ class Ticket(models.Model):
 
     def save(
         self,
-        force_insert=False,
-        force_update=False,
-        using=None,
-        update_fields=None
+            force_insert=False,
+            force_update=False,
+            using=None,
+            update_fields=None
     ):
         self.full_clean()
         return super(Ticket, self).save(
@@ -253,4 +257,3 @@ class Ticket(models.Model):
 
     def __str__(self):
         return f"{self.flight}, {self.row}: {self.seat}"
-

@@ -47,6 +47,7 @@ class AirplaneBaseTest(TestCase):
                 airplane_type=self.airplane_type,
             )
 
+
 class UnauthorizedAirplaneTests(AirplaneBaseTest):
     def setUp(self):
         self.client = APIClient()

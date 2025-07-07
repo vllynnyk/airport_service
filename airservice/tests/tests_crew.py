@@ -36,6 +36,7 @@ class CrewBaseTest(TestCase):
             last_name="Smith",
         )
 
+
 class UnauthenticatedCrewApiTests(CrewBaseTest):
     def setUp(self):
         self.client = APIClient()

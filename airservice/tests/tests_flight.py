@@ -56,14 +56,12 @@ class FlightBaseTest(TestCase):
         cls.airplane_type = AirplaneType.objects.create(name="Type A")
         cls.airplane_1 = Airplane.objects.create(
             name="Plane A",
-            rows=10,
-            seats_in_row=6,
+            rows=10, seats_in_row=6,
             airplane_type=cls.airplane_type
         )
         cls.airplane_2 = Airplane.objects.create(
             name="Plane B",
-            rows=10,
-            seats_in_row=6,
+            rows=10, seats_in_row=6,
             airplane_type=cls.airplane_type
         )
         cls.crew_1 = Crew.objects.create(first_name="Jack", last_name="Jones")
@@ -76,6 +74,7 @@ class FlightBaseTest(TestCase):
         )
         cls.flight.crew.add(cls.crew_1)
         cls.flight.save()
+
 
 class UnauthenticatedFlightApiTests(FlightBaseTest):
     def setUp(self):

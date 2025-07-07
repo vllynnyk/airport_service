@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
+
 from datetime import timedelta
 from pathlib import Path
 
@@ -37,12 +38,12 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    'rest_framework_simplejwt',
-    'rest_framework',
-    'drf_spectacular',
+    "rest_framework_simplejwt",
+    "rest_framework",
+    "drf_spectacular",
     "debug_toolbar",
     "airservice",
-    "user"
+    "user",
 ]
 
 MIDDLEWARE = [
@@ -61,8 +62,7 @@ ROOT_URLCONF = "airport_service.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / 'templates']
-        ,
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -137,35 +137,32 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = "user.User"
 
 REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': 5,
-    'DEFAULT_PERMISSION_CLASSES': [
-        'airservice.permissions.IsAdminAllOrIsAuthenticatedReadOnly',
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
+    "PAGE_SIZE": 5,
+    "DEFAULT_PERMISSION_CLASSES": [
+        "airservice.permissions.IsAdminAllOrIsAuthenticatedReadOnly",
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": (
-       "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_THROTTLE_CLASSES": [
-       "rest_framework.throttling.AnonRateThrottle",
-       "rest_framework.throttling.UserRateThrottle"
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
     ],
-    "DEFAULT_THROTTLE_RATES": {
-       "anon": "100/day",
-       "user": "1000/day"
-}
+    "DEFAULT_THROTTLE_RATES": {"anon": "100/day", "user": "1000/day"},
 }
 
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'Airport Station API',
-    'DESCRIPTION': 'Order tickets for your flight',
-    'VERSION': '1.0.0',
-    'SERVE_INCLUDE_SCHEMA': False,
-    'SWAGGER_UI_SETTINGS': {
-        'deep_link': True,
-        'defaultModelRendering': "model",
-        'defaultModelsExpandDepth': 2,
-        'defaultModelExpandDepth': 2
+    "TITLE": "Airport Station API",
+    "DESCRIPTION": "Order tickets for your flight",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "SWAGGER_UI_SETTINGS": {
+        "deep_link": True,
+        "defaultModelRendering": "model",
+        "defaultModelsExpandDepth": 2,
+        "defaultModelExpandDepth": 2,
     },
 }
 
