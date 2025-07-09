@@ -1,6 +1,12 @@
 # ✈️ Airport Service API
 
-A Django REST Framework backend for managing airports, routes, flights, crews, airplanes, and orders (tickets). Fully documented via **drf-spectacular** (OpenAPI v3), with Swagger UI and Redoc support.
+A Django REST Framework backend for managing airports, routes, flights, crews, airplanes, and orders (tickets).  
+Fully documented via **drf-spectacular** (OpenAPI v3), with Swagger UI and Redoc support.
+
+## 🔗 Links
+
+- 🌐 GitHub repository: https://github.com/vllynnyk/airport_service
+
 
 ---
 
@@ -32,61 +38,29 @@ pip install -r requirements.txt
 ```
 
 ---
+## 🐳 Docker Setup
 
-## 🔧 Configuration
-
-In your `settings.py`:
-
-```python
-INSTALLED_APPS += [
-  'rest_framework',
-  'drf_spectacular',
-  'rest_framework.authtoken',
-  'user',
-  'airservice',
-]
-
-REST_FRAMEWORK = {
-  'DEFAULT_AUTHENTICATION_CLASSES': [
-    'rest_framework.authentication.TokenAuthentication',
-  ],
-  'DEFAULT_PERMISSION_CLASSES': [
-    'rest_framework.permissions.IsAuthenticatedOrReadOnly',
-  ],
-  'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-}
-
-SPECTACULAR_SETTINGS = {
-  'TITLE': 'Airport Service API',
-  'VERSION': '1.0.0',
-  'DESCRIPTION': 'API for airport and flight management',
-}
+To run the app using Docker:
+```bash
+docker compose up --build
 ```
-
-Add URL patterns:
-
-```python
-from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
-
-urlpatterns += [
-  path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
-  path('api/schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
-  path('api/schema/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
-]
+To create a superuser inside the running container:
+```bash
+docker compose exec airport_service python manage.py createsuperuser
 ```
+Access the app at http://localhost:8001/
 
 ---
 
 ## 📘 Usage
 
-* **Register new user**: `POST /api/user/create/`
+* **Register**: `POST /api/user/create/`
 * **Login**: `POST /api/user/login/` → returns authentication token
 * **Profile**: `GET/PUT/PATCH /api/user/me/`
 * **Airports**: `GET /api/airports/`, `GET /api/airports/{id}/`, `POST`, `PUT`, `DELETE`
 * **Routes**: same endpoints under `/api/routes/`, with validations
 * **Airplanes & Types**, **Crew**, **Flights**, **Orders**: similar endpoints
-* **Authenticated users only** may create orders.
-
+* 
 Explore the full API via:
 
 * Swagger UI: `/api/schema/swagger-ui/`
@@ -118,3 +92,9 @@ Use **Conventional Commits** style. Examples:
 * `feat: add drf-spectacular documentation for viewsets`
 * `fix: correct validation logic in flight serializer`
 * `docs: update README with API routes`
+## 🔐 Default Superuser
+
+A default superuser is already created:
+
+* **Email**: admin@admin.com
+* **Password**: 1234pass
